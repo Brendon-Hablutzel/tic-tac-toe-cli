@@ -1,3 +1,4 @@
+use anyhow;
 use std::fmt::Display;
 
 #[derive(Clone, Copy, PartialEq)]
@@ -38,7 +39,7 @@ impl Display for Cell {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Cell::Player(p) => write!(f, "{p}"),
-            Cell::Empty => write!(f, "_"),
+            Cell::Empty => write!(f, "#"),
         }
     }
 }
@@ -72,9 +73,13 @@ impl Board {
         Board([Cell::Empty; 9])
     }
 
-    pub fn make_move(&mut self, player: Player, position: usize) -> Result<(), &'static str> {
-        if position > 8 || self.0[position] != Cell::Empty {
-            return Err("Invalid position");
+    pub fn make_move(&mut self, player: Player, position: usize) -> anyhow::Result<()> {
+        if position > 8 {
+            anyhow::bail!("invalid position: too large");
+        }
+
+        if self.0[position] != Cell::Empty {
+            anyhow::bail!("invalid position: already taken");
         }
 
         self.0[position] = Cell::Player(player);
